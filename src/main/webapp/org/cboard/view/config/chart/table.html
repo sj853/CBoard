@@ -43,6 +43,16 @@
                             <li>
                                 <a ng-click="editVFilter(o)">{{'CONFIG.WIDGET.FILTER'|translate}}</a>
                             </li>
+                            <!-- liaoxinxing 2019-08-05 交叉表扩展同比、环比、占比 -->
+                            <li class="dropdown-submenu">
+                                <a tabindex="-1">{{'CONFIG.WIDGET.VALUE_TYPE'|translate}}：{{valueType.getTypeName(o)}}</a>
+                                <ul class="dropdown-menu">
+                                    <li ng-repeat="a in tableValueTypes">
+                                        <a ng-click="valueType.edit(o, a.value)">{{a.name}}</a>
+                                    </li>
+
+                                </ul>
+                            </li>
                         </ul>
                     </div>
                     <div ng-switch-default class="btn-group">
@@ -86,6 +96,16 @@
                             </li>
                             <li>
                                 <a ng-click="editVFilter(o)">{{'CONFIG.WIDGET.FILTER'|translate}}</a>
+                            </li>
+                            <!-- liaoxinxing 2019-08-05 交叉表扩展同比、环比、占比 -->
+                            <li class="dropdown-submenu">
+                                <a tabindex="-1">{{'CONFIG.WIDGET.VALUE_TYPE'|translate}}：{{valueType.getTypeName(o)}}</a>
+                                <ul class="dropdown-menu">
+                                    <li ng-repeat="a in tableValueTypes">
+                                        <a ng-click="valueType.edit(o, a.value)">{{a.name}}</a>
+                                    </li>
+
+                                </ul>
                             </li>
                         </ul>
                     </div>

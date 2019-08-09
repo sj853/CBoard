@@ -54,7 +54,9 @@
     "UNFOLD_TREE": "Unflod all nodes",
     "MUST_SELECT_ONE_BOARD": "Please choose one board first",
     "SKIP_TO": "Skip to",
-    "SKIP": "Skip"
+    "SKIP": "Skip",
+    "DIFFERENCE": "Difference",
+    "CHANGE_RATE": "Change Rate"
   },
   "HOMEPAGE": {
     "TITLE": "HOMEPAGE",
@@ -234,7 +236,19 @@
       "CHINA_MAP":"China Map (Local)",
       "CHINA_MAP_BMAP":"China Map (Bmap)",
       "RELATION": "Relation",
-      "WORLD_MAP": "World Map"
+      "WORLD_MAP": "World Map",
+      "VALUE_TYPE": "Value Type",
+      "ORIGIN_VALUE": "Origin Value",
+      "ROW_RATIO": "Row Ratio",
+      "LINE_RATIO": "Line Ratio",
+      "ALL_RATIO": "All Ratio",
+      "YEAR_ON_YEAR": "Year On Year",
+      "QUARTER_ON_QUARTER": "Quarter On Quarter",
+      "YEAR_ON_YEAR_DATE_COLUMN": "Date Column",
+      "YEAR_ON_YEAR_DATE_FORMAT": "Date Format",
+      "YEAR_ON_YEAR_SHOW_TYPE": "Show Type",
+      "YEAR_ON_YEAR_IGNORE_COLUMN": "Ignore Column",
+      "LAGGING_NUMBER": "Lagging Number"
     },
     "DASHBOARD": {
       "CATEGORY": "Category",

@@ -256,6 +256,165 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
             worldMap: {keys: 2, groups: -1, filters: -1, values: 1}
         };
 
+        /******************************
+         * liaoxinxing
+         * 2019-08-05
+         * 交叉表扩展占比、环比、同比
+         *******************************/
+        $scope.tableValueTypes = [
+            {name: translate('CONFIG.WIDGET.ORIGIN_VALUE'), value: 'originValue'},
+            {name: translate('CONFIG.WIDGET.ROW_RATIO'), value: 'rowRatio'},
+            {name: translate('CONFIG.WIDGET.LINE_RATIO'), value: 'lineRatio'},
+            {name: translate('CONFIG.WIDGET.ALL_RATIO'), value: 'allRatio'},
+            {name: translate('CONFIG.WIDGET.YEAR_ON_YEAR'), value: 'yearOnYear'},
+            {name: translate('CONFIG.WIDGET.QUARTER_ON_QUARTER'), value: 'quarterOnQuarter'},
+        ];
+
+        /**
+         * 交叉表值类型处理
+         */
+        $scope.valueType = {
+            /**
+             * 编辑交叉表指标列值类型
+             * @param o 指标列
+             * @param valueType 值类型
+             */
+            edit: function (o, valueType) {
+                var title =  (o.alias ? o.alias + '(' + o.col + ')' : o.col);
+                var oldValueType = angular.copy(o.valueType) || { type: valueType };
+                var showTypes = [
+                    {name: translate('COMMON.VALUE'), value: 'value'},
+                    {name: translate('COMMON.DIFFERENCE'), value: 'difference'},
+                    {name: translate('COMMON.CHANGE_RATE'), value: 'change_rate'}
+                ];
+                if (valueType === 'yearOnYear') {
+                    //同比
+                    title = title + '-' + translate('CONFIG.WIDGET.YEAR_ON_YEAR');
+                    var dateColumns = $scope.curWidget.config.keys;
+                    $uibModal.open({
+                        templateUrl: 'org/cboard/view/config/modal/chart/tableValueTypeYearOnYear.html',
+                        windowTemplateUrl: 'org/cboard/view/util/modal/window.html',
+                        backdrop: false,
+                        size: 'lg',
+                        controller: function ($scope, $uibModalInstance) {
+                            $scope.title = title;
+                            $scope.ignore_columns = oldValueType.ignore_columns || [];
+                            $scope.date_columns = _.map(dateColumns, function (column) {
+                                return {name:column.alias?column.alias+'('+column.col+')':column.column, value:column.col};
+                            });
+                            var column = oldValueType.date_column || $scope.date_columns[0].value;
+                            $scope.date_column = _.find($scope.date_columns, function (c) {
+                                return c.value === column;
+                            });
+                            $scope.date_format = oldValueType.date_format || 'YYYY';
+                            $scope.show_types = showTypes;
+                            var showType = oldValueType.show_type ||  'value';
+                            $scope.show_type = _.find($scope.show_types, function (type) {
+                                return type.value === showType;
+                            });
+                            $scope.close = function () {
+                                $uibModalInstance.close();
+                            };
+                            $scope.ok = function () {
+                                o.valueType = {
+                                    type: valueType,
+                                    date_column: $scope.date_column.value,
+                                    date_format: $scope.date_format,
+                                    show_type: $scope.show_type.value,
+                                    ignore_columns: angular.copy($scope.ignore_columns),
+                                    lagging_number: null
+                                };
+                                $uibModalInstance.close();
+                            };
+                            $scope.checkIgnoreColumn = function(o) {
+                                if ($scope.ignore_columns.length === 0) {
+                                    return false;
+                                }
+                                return !!_.find($scope.ignore_columns, function (column) {
+                                    return column === o.value;
+                                });
+                            };
+                            $scope.toggleCheck = function (o) {
+                                if ($scope.ignore_columns.length === 0) {
+                                    $scope.ignore_columns.push(o.value);
+                                } else {
+                                    var existsIgnore = _.find($scope.ignore_columns, function (column) {
+                                        return column === o.value;
+                                    });
+                                    if (existsIgnore) {
+                                        $scope.ignore_columns = _.filter($scope.ignore_columns, function (column) {
+                                            return column !== o.value;
+                                        });
+                                    } else {
+                                        $scope.ignore_columns.push(o.value);
+                                    }
+                                }
+                            };
+                        }
+                    });
+                } else if (valueType === 'quarterOnQuarter') {
+                    //环比
+                    title = title + '-' + translate('CONFIG.WIDGET.QUARTER_ON_QUARTER');
+                    $uibModal.open({
+                        templateUrl: 'org/cboard/view/config/modal/chart/tableValueTypeQuarterOnQuarter.html',
+                        windowTemplateUrl: 'org/cboard/view/util/modal/window.html',
+                        backdrop: false,
+                        size: 'lg',
+                        controller: function ($scope, $uibModalInstance) {
+                            $scope.title = title;
+                            $scope.lagging_number = oldValueType.lagging_number || 1;
+                            $scope.show_types = showTypes;
+                            var showType = oldValueType.show_type ||  'value';
+                            $scope.show_type = _.find($scope.show_types, function (type) {
+                                return type.value === showType;
+                            });
+                            $scope.close = function () {
+                                $uibModalInstance.close();
+                            };
+                            $scope.ok = function () {
+                                o.valueType = {
+                                    type: valueType,
+                                    date_column: null,
+                                    date_format: null,
+                                    show_type: $scope.show_type.value,
+                                    ignore_columns: null,
+                                    lagging_number: numbro($scope.lagging_number).value()
+                                };
+                                if (!_.isNumber(o.valueType.lagging_number) || _.isNaN(o.valueType.lagging_number) || o.valueType.lagging_number <= 0) {
+                                    o.valueType.lagging_number = 1
+                                }
+                                $uibModalInstance.close();
+                            };
+                        }
+                    });
+                } else {
+                    o.valueType = {
+                        type: valueType,
+                        date_column: null,
+                        date_format: null,
+                        show_type: null,
+                        ignore_columns: null,
+                        lagging_number: null
+                    };
+                }
+            },
+            /**
+             * 获取值指标列类型名称
+             * @param o 指标列
+             */
+            getTypeName: function(o) {
+                if (!o.valueType) {
+                    o.valueType = {
+                        type: 'originValue'
+                    };
+                }
+                var valueType = _.find($scope.tableValueTypes, function (type) {
+                    return type.value === o.valueType.type;
+                });
+                return valueType.name;
+            }
+        };
+
         $scope.switchLiteMode = function (mode) {
             if (mode) {
                 $scope.liteMode = mode;

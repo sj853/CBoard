@@ -250,7 +250,13 @@ var crossTable = {
                 var align = chartConfig.values[0].cols[(y-chartConfig.keys.length)%chartConfig.values[0].cols.length].align;
                 var temData = data[n][y].data/* === "" ? "" : data[n][y].data + " ABCD EFG HIJKLMNO PQ RST"*/;
                 var celData = this.dataWrap(temData);
-                rowContent += "<td style='text-align:"+align+"'class=" + data[n][m].property + "><div>" + celData + "</div></td>";
+                /******************************
+                 * liaoxinxing
+                 * 2019-08-05
+                 * 交叉表扩展占比、环比、同比
+                 * 背景色
+                 *******************************/
+                rowContent += "<td style='text-align:"+align+ (data[n][y].bgClass ? (";" + data[n][y].bgClass) : "") + "'class=" + data[n][m].property + "><div>" + celData + "</div></td>";
             }
             html = html + rowContent + "</tr>";
         }

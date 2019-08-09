@@ -54,7 +54,9 @@
     "UNFOLD_TREE": "收起所有树节点",
     "MUST_SELECT_ONE_BOARD": "请选择一个看板",
     "SKIP_TO": "跳转至",
-    "SKIP": "跳转"
+    "SKIP": "跳转",
+    "DIFFERENCE": "差值",
+    "CHANGE_RATE": "变化率"
   },
   "HOMEPAGE": {
     "TITLE": "首页",
@@ -234,7 +236,19 @@
       "CHINA_MAP":"中国地图（本地）",
       "CHINA_MAP_BMAP":"中国地图（百度）",
       "RELATION": "关系图",
-      "WORLD_MAP": "世界地图"
+      "WORLD_MAP": "世界地图",
+      "VALUE_TYPE": "值类型",
+      "ORIGIN_VALUE": "原始值",
+      "ROW_RATIO": "行占比",
+      "LINE_RATIO": "列占比",
+      "ALL_RATIO": "所有占比",
+      "YEAR_ON_YEAR": "同比",
+      "QUARTER_ON_QUARTER": "环比",
+      "YEAR_ON_YEAR_DATE_COLUMN": "日期列",
+      "YEAR_ON_YEAR_DATE_FORMAT": "日期格式",
+      "YEAR_ON_YEAR_SHOW_TYPE": "显示值",
+      "YEAR_ON_YEAR_IGNORE_COLUMN": "忽略列",
+      "LAGGING_NUMBER": "滞后量"
     },
     "DASHBOARD": {
       "DASHBOARD": "看板",

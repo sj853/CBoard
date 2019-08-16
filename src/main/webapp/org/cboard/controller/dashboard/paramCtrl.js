@@ -52,7 +52,12 @@ cBoard.controller('paramCtrl', function ($scope, $uibModal, $http) {
         $scope.param.selects = [];
         if(!$scope.param.type) $scope.param.type = '=';
         if(!$scope.param.values) $scope.param.values = [];
-        if ($scope.param.paramType == 'slider') {
+        if ($scope.param.paramType == 'input') {
+            $scope.param.type = _.result($scope.param.cfg, 'filterType', null)
+            if (!$scope.param.type) {
+                $scope.param.type = '='
+            }
+        } else if ($scope.param.paramType == 'slider') {
             var cfg = $scope.param.cfg;
             var _max = evalValue(_.result(cfg, 'max', null));
             var _min = evalValue(_.result(cfg, 'min', null));
@@ -162,5 +167,27 @@ cBoard.controller('paramCtrl', function ($scope, $uibModal, $http) {
             controller: 'paramSelector'
         });
     };
+    /**
+     * 输入框失去焦点事件
+     * @param param
+     */
+    $scope.inputChange = function (param) {
+        $scope.param.values = []
+        if (param) {
+            $scope.param.values = [param];
+        }
+        $scope.applyParamFilter();
+    }
+    /**
+     * 下拉选项改变事件
+     * @param param
+     */
+    $scope.selectChanged = function (param) {
+        $scope.param.values = []
+        if (param) {
+            $scope.param.values = [param];
+        }
+        $scope.applyParamFilter();
 
+    }
 });

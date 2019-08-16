@@ -129,6 +129,12 @@ public class SqlHelper {
             case "≠":
             case "ne":
                 return fieldName + " NOT IN (" + valueList(config) + ")";
+            case "like %a%":
+                return fieldName + " like '%" + config.getValues().get(0) + "%'";
+            case "like %a":
+                return fieldName + " like '%" + config.getValues().get(0) + "'";
+            case "like a%":
+                return fieldName + " like '" + config.getValues().get(0) + "%'";
             case ">":
                 return rangeQuery(fieldName, v0, null);
             case "<":

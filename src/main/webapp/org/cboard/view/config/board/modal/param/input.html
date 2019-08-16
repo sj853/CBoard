@@ -1,0 +1,30 @@
+<div class="row form-horizontal" style="margin-bottom: 10px">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">{{'CONFIG.DASHBOARD.PARAM_TYPE'|translate}}</label>
+            <div class="col-sm-8">
+                <select class="form-control" ng-model="param.paramType" ng-options="d.value as d.name for d in param_types"></select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label-compact">{{'CONFIG.DASHBOARD.FILTER_TYPE'|translate}}</label>
+            <div class="col-sm-8">
+                <div class="input-group">
+                    <input type="text" class="form-control" ng-model="param.cfg.filterType">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span class="fa fa-caret-down"></span></button>
+                        <ul class="dropdown-menu">
+                            <li ng-click="param.cfg.filterType='like %a%'"><a>{{'CONFIG.DASHBOARD.LIKE_D'|translate}}</a></li>
+                            <li ng-click="param.cfg.filterType='like %a'"><a>{{'CONFIG.DASHBOARD.LIKE_F'|translate}}</a></li>
+                            <li ng-click="param.cfg.filterType='like a%'"><a>{{'CONFIG.DASHBOARD.LIKE_R'|translate}}</a></li>
+                            <li ng-click="param.cfg.filterType='='"><a>{{'CONFIG.DASHBOARD.EQ'|translate}}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

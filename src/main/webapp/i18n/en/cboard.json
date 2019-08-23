@@ -109,6 +109,12 @@
       "SELECT_VALUE": "Select Value From List",
       "INPUT_VALUE": "Input Value Or Expression",
       "LIST_WARN": "Make sure you are not loading a large size list or continuous value!"
+    },
+    "CHART_EXPORT": {
+      "JPG": "Export JPG",
+      "PNG": "Export PNG",
+      "BMP": "Export BMP",
+      "PDF": "Export PDF"
     }
   },
   "CONFIG": {

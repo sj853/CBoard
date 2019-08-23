@@ -348,7 +348,7 @@ span.ellipse {
     float: left;
     margin: 4px 0 0 5px;
 }
-.exportBnt, .exportCsvBnt, .drillUp, .drillDown{
+.exportBnt, .exportCsvBnt, .drillUp, .drillDown, .exportJpgBnt, .exportPngBnt, .exportBmpBnt, .exportPdfBnt {
     margin:7px 5px 10px 5px;
     float: right;
     width: 15px;
@@ -371,6 +371,32 @@ span.ellipse {
     background: url("../imgs/csv.svg");
     background-size: cover;
 }
+
+/*
+* 2019.08.22 liaoxx
+* 增加导出按钮样式
+*/
+
+.exportJpgBnt{
+    background: url("../imgs/jpg.svg");
+    background-size: cover;
+}
+
+.exportPngBnt{
+    background: url("../imgs/png.svg");
+    background-size: cover;
+}
+
+.exportBmpBnt{
+    background: url("../imgs/bmp.svg");
+    background-size: cover;
+}
+
+.exportPdfBnt{
+    background: url("../imgs/pdf.svg");
+    background-size: cover;
+}
+
 div.operateBox {
     position: relative;
 }

@@ -7,10 +7,17 @@ var CBoardMapRender = function (jqContainer, options, drill) {
     this.jqContainer = jqContainer;
     this.drill = drill;
     var _this = this;
-    $(jqContainer).html("<div class='map_wrapper'></div>");
+    /**
+     * 2019.08.21 liaoxx
+     * map 下载图片工具配置
+     */
+    var random = exportImageHelper.random();
+    var toolBar = exportImageHelper.toolBar(random);
+    $(jqContainer).html(toolBar + "<div class='map_wrapper' id='map_wrapper_" + random + "'></div>");
     $('.map_wrapper').resize(function () {
         _this.do(_this.tall);
     });
+    exportImageHelper.buildButton(random, $('#map_wrapper_' + random), 'map');
 };
 
 CBoardMapRender.prototype.do = function (tall, persist) {

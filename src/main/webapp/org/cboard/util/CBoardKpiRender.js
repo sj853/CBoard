@@ -24,6 +24,18 @@ CBoardKpiRender.prototype.html = function (persist) {
     return html;
 };
 
+/**
+ * 2019.08.21 liaoxx
+ * kpi 下载图片工具配置
+ */
+CBoardKpiRender.prototype.buildImageExport = function() {
+    var kpiDom = $(this.container[0].lastChild);
+    var random = exportImageHelper.random();
+    var toolBar = exportImageHelper.toolBar(random);
+    kpiDom.before(toolBar);
+    exportImageHelper.buildButton(random, kpiDom, 'kpi');
+};
+
 CBoardKpiRender.prototype.realTimeTicket = function () {
     var self = this;
     return function (o) {

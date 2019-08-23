@@ -109,6 +109,12 @@
       "SELECT_VALUE": "列表选值",
       "INPUT_VALUE": "输入值或表达式",
       "LIST_WARN": "值列表过大或者连续值，请不要加载数据列表!"
+    },
+    "CHART_EXPORT": {
+      "JPG": "导出JPG",
+      "PNG": "导出PNG",
+      "BMP": "导出BMP",
+      "PDF": "导出PDF"
     }
   },
   "CONFIG": {

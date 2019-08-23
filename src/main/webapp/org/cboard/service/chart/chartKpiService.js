@@ -14,6 +14,7 @@ cBoard.service('chartKpiService', function (dataService, $compile, $filter) {
         } else {
             containerDom.html(html);
         }
+        render.buildImageExport();
         return render.realTimeTicket();
     };
 

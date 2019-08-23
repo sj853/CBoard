@@ -35,6 +35,16 @@ var CBoardHeatMapRender = function (jqContainer, options, isDeepSpec) {
 
     this.basicOption = echartsBasicOption;
     this.options = options;
+
+    var echartDom = $(jqContainer.get(0).firstChild);
+    /**
+     * 2019.08.21 liaoxx
+     * map 下载图片工具配置
+     */
+    var random = exportImageHelper.random();
+    var toolBar = exportImageHelper.toolBar(random);
+    echartDom.before(toolBar);
+    exportImageHelper.buildButton(random, echartDom, 'chinaMap');
 };
 
 CBoardHeatMapRender.prototype.theme = "theme-fin1"; // 主题

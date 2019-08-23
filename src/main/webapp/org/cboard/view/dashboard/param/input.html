@@ -1,3 +1,8 @@
-<div class="btn-group" style="cursor: move;margin: 3px 3px;">
-    <input ng-model="title" placeholder="{{param.name}}" ng-blur="inputChange(title)"/>
+<div class="input-group input-group-sm" style="width: 300px;margin:3px;">
+    <span class="input-group-addon">{{param.name}}</span>
+    <input class="form-control pull-right ng-pristine ng-untouched ng-valid" ng-model="title"
+           placeholder="{{param.name}}"/>
+    <div class="input-group-btn">
+        <button type="button" class="btn btn-sm btn-primary" ng-click="inputChange(title)">确定</button>
+    </div>
 </div>

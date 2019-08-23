@@ -1629,6 +1629,9 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
                 case 'desc':
                     o.sort = undefined;
                     break;
+                case 'custom':
+                    o.sort = 'custom';
+                    break;
                 default:
                     o.sort = 'asc';
                     break;

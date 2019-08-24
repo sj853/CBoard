@@ -1,0 +1,119 @@
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close" ng-click="close()">
+        <span aria-hidden="true">×</span></button>
+    <h4 class="modal-title">{{param.name?param.name:param.col}} 自定义排序</h4>
+</div>
+<div class="modal-body box box-solid">
+    <div class="row">
+        <div class="col-md-12" ng-repeat="alert in alerts">
+            <div uib-alert ng-class="'alert-' + (alert.type || 'warning')"
+                 close="alerts.splice($index, 1)">{{alert.msg}}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 form-horizontal" style="margin-bottom:5px;">
+            <span style="font-weight: bold">默认排序</span>
+            <select ng-model="param.otherSort">
+                <option value="asc">asc</option>
+                <option value="desc">desc</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-5">
+            <div class="row">
+                <div class="col-md-12 form-horizontal">
+                    <div class="input-group">
+                        <span class="input-group-addon">{{'DASHBOARD.PARAM.FIND'|translate}}</span>
+                        <input type="text" class="form-control" ng-model="keyword">
+                    </div>
+                </div>
+            </div>
+            <div class="row" ng-show="!loadSelect">
+                <div class="col-md-12 SelectsOption">
+                    <select multiple class="form-control selectsOption" ng-model="selectItems" style="height: 300px">
+                        <option ng-repeat="v in selects | filter:selected | filter:keyword"
+                                style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;" title="{{v}}"
+                                value="{{v}}"
+                                ng-dblclick="dbclickPush(v)">{{v}}
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="row bs-example" ng-show="loadSelect">
+                <div class="col-md-12 SelectsOption jumbotron" style="height: 300px; margin: 0px;">
+                    <h3>{{'COMMON.WANRING'|translate}}</h3>
+                    <p style="font-size: medium">{{'DASHBOARD.PARAM.LIST_WARN'|translate}}</p>
+                    <button type="button" ng-click="getSelects();loadSelect=false;" class="btn btn-warning pull-right">
+                        {{'COMMON.LOAD'|translate}}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 text-center">
+
+            <div class="row top-buffer-lg">
+                <button type="button" class="btn btn-default" ng-click="pushValues(selectItems)"><i
+                        class="fa fa-angle-right" style="width: 15px"></i></button>
+            </div>
+            <div class="row top-buffer">
+                <button type="button" class="btn btn-default" ng-click="deleteValues(selectValues)"><i
+                        class="fa fa-angle-left" style="width: 15px"></i></button>
+            </div>
+            <div class="row top-buffer">
+                <button type="button" class="btn btn-default" ng-click="param.sortValues=[]"><i
+                        class="fa fa-angle-double-left" style="width: 15px"></i></button>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <span>{{'DASHBOARD.PARAM.VALUE_LIST'|translate}}</span>
+                        <select multiple class="form-control selectsOption" ng-model="$parent.selectValues"
+                                style="height: 300px">
+                            <option ng-repeat="v in param.sortValues"
+                                    style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;" title="{{v}}"
+                                    ng-click="updateCurrentIndex($index)"
+                                    ng-dblclick="param.sortValues.splice($index,1)" value="{{v}}">{{v}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-1 text-center">
+            <div class="row top-buffer-lg">
+                <button type="button" class="btn btn-default" ng-click="upTopValue(currentSelectIndex)"><i
+                        class="fa fa-angle-double-up" style="width: 15px"></i></button>
+            </div>
+            <div class="row top-buffer">
+                <button type="button" class="btn btn-default" ng-click="upValue(currentSelectIndex)"><i
+                        class="fa fa-angle-up" style="width: 15px"></i></button>
+            </div>
+            <div class="row top-buffer">
+                <button type="button" class="btn btn-default" ng-click="downValue(currentSelectIndex)"><i
+                        class="fa fa-angle-down" style="width: 15px"></i></button>
+            </div>
+
+            <div class="row top-buffer">
+                <button type="button" class="btn btn-default" ng-click="downBottomValue(currentSelectIndex)"><i
+                        class="fa fa-angle-double-down" style="width: 15px"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="overlay" ng-show="loading">
+    <i class="fa fa-refresh fa-spin"></i>
+</div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">
+        {{'COMMON.CANCEL'|translate}}
+    </button>
+    <button type="button" class="btn btn-primary" ng-click="ok()">{{'COMMON.OK'|translate}}</button>
+</div>

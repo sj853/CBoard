@@ -143,15 +143,15 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
             "funnel": true, "sankey": true, "radar": true, "map": true,
             "scatter": true, "gauge": true, "wordCloud": true, "treeMap": true,
             "heatMapCalendar": true, "heatMapTable": true, "liquidFill": true,
-            "areaMap": true, "contrast": true,"chinaMap":true,"chinaMapBmap":true,
-            "relation":true, "worldMap": true
+            "areaMap": true, "contrast": true, "chinaMap": true, "chinaMapBmap": true,
+            "relation": true, "worldMap": true
         };
 
         $scope.value_series_types = [
             {name: translate('CONFIG.WIDGET.LINE'), value: 'line'},
-            {name: translate('CONFIG.WIDGET.AREA_LINE'),value:'arealine'},
-            {name: translate('CONFIG.WIDGET.STACKED_LINE'),value:'stackline'},
-            {name: translate('CONFIG.WIDGET.PERCENT_LINE'),value:'percentline'},
+            {name: translate('CONFIG.WIDGET.AREA_LINE'), value: 'arealine'},
+            {name: translate('CONFIG.WIDGET.STACKED_LINE'), value: 'stackline'},
+            {name: translate('CONFIG.WIDGET.PERCENT_LINE'), value: 'percentline'},
             {name: translate('CONFIG.WIDGET.BAR'), value: 'bar'},
             {name: translate('CONFIG.WIDGET.STACKED_BAR'), value: 'stackbar'},
             {name: translate('CONFIG.WIDGET.PERCENT_BAR'), value: 'percentbar'}
@@ -188,7 +188,6 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
         $.getJSON('plugins/FineMap/mapdata/citycode.json', function (data) {
             $scope.provinces = data.provinces;
         });
-
 
 
         $scope.treemap_styles = [
@@ -250,8 +249,8 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
             heatMapTable: {keys: 2, groups: 2, filters: -1, values: 1},
             liquidFill: {keys: 0, groups: 0, filters: -1, values: 1},
             contrast: {keys: 1, groups: 0, filters: -1, values: 2},
-            chinaMap:{keys: 2, groups: -1, filters: -1, values: 2},
-            chinaMapBmap:{keys: 2, groups: -1, filters: -1, values: 2},
+            chinaMap: {keys: 2, groups: -1, filters: -1, values: 2},
+            chinaMapBmap: {keys: 2, groups: -1, filters: -1, values: 2},
             relation: {keys: 2, groups: 2, filters: -1, values: 1},
             worldMap: {keys: 2, groups: -1, filters: -1, values: 1}
         };
@@ -280,8 +279,8 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
              * @param valueType 值类型
              */
             edit: function (o, valueType) {
-                var title =  (o.alias ? o.alias + '(' + o.col + ')' : o.col);
-                var oldValueType = angular.copy(o.valueType) || { type: valueType };
+                var title = (o.alias ? o.alias + '(' + o.col + ')' : o.col);
+                var oldValueType = angular.copy(o.valueType) || {type: valueType};
                 var showTypes = [
                     {name: translate('COMMON.VALUE'), value: 'value'},
                     {name: translate('COMMON.DIFFERENCE'), value: 'difference'},
@@ -300,7 +299,10 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
                             $scope.title = title;
                             $scope.ignore_columns = oldValueType.ignore_columns || [];
                             $scope.date_columns = _.map(dateColumns, function (column) {
-                                return {name:column.alias?column.alias+'('+column.col+')':column.column, value:column.col};
+                                return {
+                                    name: column.alias ? column.alias + '(' + column.col + ')' : column.column,
+                                    value: column.col
+                                };
                             });
                             var column = oldValueType.date_column || $scope.date_columns[0].value;
                             $scope.date_column = _.find($scope.date_columns, function (c) {
@@ -308,7 +310,7 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
                             });
                             $scope.date_format = oldValueType.date_format || 'YYYY';
                             $scope.show_types = showTypes;
-                            var showType = oldValueType.show_type ||  'value';
+                            var showType = oldValueType.show_type || 'value';
                             $scope.show_type = _.find($scope.show_types, function (type) {
                                 return type.value === showType;
                             });
@@ -326,7 +328,7 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
                                 };
                                 $uibModalInstance.close();
                             };
-                            $scope.checkIgnoreColumn = function(o) {
+                            $scope.checkIgnoreColumn = function (o) {
                                 if ($scope.ignore_columns.length === 0) {
                                     return false;
                                 }
@@ -364,7 +366,7 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
                             $scope.title = title;
                             $scope.lagging_number = oldValueType.lagging_number || 1;
                             $scope.show_types = showTypes;
-                            var showType = oldValueType.show_type ||  'value';
+                            var showType = oldValueType.show_type || 'value';
                             $scope.show_type = _.find($scope.show_types, function (type) {
                                 return type.value === showType;
                             });
@@ -402,7 +404,7 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
              * 获取值指标列类型名称
              * @param o 指标列
              */
-            getTypeName: function(o) {
+            getTypeName: function (o) {
                 if (!o.valueType) {
                     o.valueType = {
                         type: 'originValue'
@@ -474,7 +476,7 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
             });
         });
 
-        $scope.getCurDatasetName = function() {
+        $scope.getCurDatasetName = function () {
             if ($scope.customDs) {
                 return translate('CONFIG.WIDGET.NEW_QUERY');
             } else {
@@ -508,7 +510,7 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
             });
         };
 
-        $scope.viewExp = function(exp) {
+        $scope.viewExp = function (exp) {
             ModalUtils.alert({title: translate('CONFIG.COMMON.CUSTOM_EXPRESSION') + ': ' + exp.alias, body: exp.exp},
                 "modal-info", 'lg');
         }
@@ -552,8 +554,10 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
                     $scope.close = function () {
                         $uibModalInstance.close();
                     };
-                    var columns = _.map(columnObjs, function (o) { return o.column; });
-                    $scope.expAceOpt = expEditorOptions($scope.selects, aggregate, function(_editor) {
+                    var columns = _.map(columnObjs, function (o) {
+                        return o.column;
+                    });
+                    $scope.expAceOpt = expEditorOptions($scope.selects, aggregate, function (_editor) {
                         $scope.expAceEditor = _editor;
                         $scope.expAceSession = _editor.getSession();
                         _editor.focus();
@@ -1131,15 +1135,15 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
             });
         };
 
-        $scope.initColorPicker =  function (index) {
-            $timeout(function() {
-                $("#color_"+index).colorpicker()
-                    .on("changeColor", function(e){
-                        if($scope.curWidget.config.styles[e.target.id.split("_")[1]]){
+        $scope.initColorPicker = function (index) {
+            $timeout(function () {
+                $("#color_" + index).colorpicker()
+                    .on("changeColor", function (e) {
+                        if ($scope.curWidget.config.styles[e.target.id.split("_")[1]]) {
                             $scope.curWidget.config.styles[e.target.id.split("_")[1]].color = e.color.toHex();
                         }
                     });
-            }, 100,true);
+            }, 100, true);
         };
 
         var saveWgtCallBack = function (serviceStatus) {
@@ -1621,22 +1625,75 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
             });
         };
 
-        $scope.editSort = function (o) {
+
+        $scope.editSort = function (o, setbackIdx) {
             switch (o.sort) {
                 case 'asc':
                     o.sort = 'desc';
                     break;
                 case 'desc':
-                    o.sort = undefined;
+                    if (setbackIdx >= 0) {
+                        o.sort = 'custom';
+                        $uibModal.open({
+                            templateUrl: 'org/cboard/view/dashboard/modal/sortParam.html',
+                            windowTemplateUrl: 'org/cboard/view/util/modal/window.html',
+                            backdrop: false,
+                            size: 'lg',
+                            resolve: {
+                                param: function () {
+                                    var item = $scope.curWidget.config.keys[setbackIdx];
+                                    if (item.col) {
+                                        if (!item.sortValues) {
+                                            item.sortValues = []
+                                        }
+                                        if (!item.otherSort) {
+                                            item.otherSort = 'asc'
+                                        }
+                                        return angular.copy(item);
+                                    } else {
+                                        return {col: item, sortValues: []}
+                                    }
+                                },
+                                filter: function () {
+                                    return true;
+                                },
+                                getSelects: function () {
+                                    return function (byFilter, column, callback) {
+                                        var config = undefined;
+                                        if (byFilter) {
+                                            config = angular.copy($scope.curWidget.config);
+                                            var arr = _.findKey($scope.curWidget.config, function (o) {
+                                                return o == $scope.curWidget.config.keys;
+                                            });
+                                            config[arr].splice(setbackIdx, 1);
+                                        }
+                                        dataService.getDimensionValues($scope.datasource ? $scope.datasource.id : null, $scope.curWidget.query, $scope.customDs ? undefined : $scope.curWidget.datasetId, column, config, function (filtered) {
+                                            callback(filtered);
+                                        });
+                                    };
+                                },
+                                ok: function () {
+                                    return function (param) {
+                                        $scope.curWidget.config.keys[setbackIdx] = param;
+                                    }
+                                }
+                            },
+                            controller: 'sortParamSelector'
+                        });
+                    } else {
+                        o.sort = undefined
+                    }
+
                     break;
                 case 'custom':
-                    o.sort = 'custom';
+                    o.sort = undefined;
                     break;
                 default:
                     o.sort = 'asc';
                     break;
             }
         };
+
 
         $scope.cleanVSort = function () {
             _.each($scope.curWidget.config.values, function (v) {
@@ -1702,7 +1759,7 @@ cBoard.controller('widgetCtrl', function ($scope, $state, $stateParams, $http, $
         $scope.showInfo = function () {
             if (!checkTreeNode("info")) return;
             var content = getSelectedWidget();
-            ModalUtils.info(content,"modal-info", "lg");
+            ModalUtils.info(content, "modal-info", "lg");
         };
         $scope.copyNode = function () {
             if (!checkTreeNode("copy")) return;

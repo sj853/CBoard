@@ -61,6 +61,7 @@ cBoard.service('dataService', function ($http, $q, updateService) {
                         }
                     });
                 });
+
                 function replaceVariable(expList, exp) {
                     var value = exp.exp;
                     var loopCnt = 0;
@@ -68,7 +69,7 @@ cBoard.service('dataService', function ($http, $q, updateService) {
                     for (var i = 0; i < expList.length; i++) {
                         context[expList[i].alias] = expList[i].exp;
                     }
-                    value = value.render2(context, function(v) {
+                    value = value.render2(context, function (v) {
                         return '(' + v + ')';
                     });
                     while (value.match(/\$\{.*?\}/g) != null) {
@@ -79,6 +80,7 @@ cBoard.service('dataService', function ($http, $q, updateService) {
                     }
                     return value;
                 }
+
                 //link dimension
                 var linkFunction = function (k) {
                     if (k.id) {
@@ -117,10 +119,25 @@ cBoard.service('dataService', function ($http, $q, updateService) {
         if (array) {
             _.each(array, function (e) {
                 if (_.isUndefined(e.group)) {
-                    result.push({columnName: e.col, filterType: e.type, values: e.values, id: e.id});
+                    result.push({
+                        columnName: e.col,
+                        filterType: e.type,
+                        values: e.values,
+                        id: e.id,
+                        sortValues: e.sortValues,
+                        sort: e.sort,
+                        otherSort: e.otherSort
+                    });
                 } else {
                     _.each(e.filters, function (f) {
-                        result.push({columnName: f.col, filterType: f.type, values: f.values});
+                        result.push({
+                            columnName: f.col,
+                            filterType: f.type,
+                            values: f.values,
+                            sortValues: e.sortValues,
+                            sort: e.sort,
+                            otherSort: e.otherSort
+                        });
                     });
                 }
             });
@@ -326,8 +343,8 @@ cBoard.service('dataService', function ($http, $q, updateService) {
                 var series = configToDataSeries(c);
                 _.each(series, function (s) {
                     if (!_.find(result, function (e) {
-                            return JSON.stringify(e) == JSON.stringify(s);
-                        })) {
+                        return JSON.stringify(e) == JSON.stringify(s);
+                    })) {
                         result.push(s);
                     }
                 });
@@ -546,7 +563,7 @@ cBoard.service('dataService', function ($http, $q, updateService) {
                 return r;
             }
         };
-        castedKeys.sort(getSort(keysSort));
+        // castedKeys.sort(getSort(keysSort));
         castedGroups.sort(getSort(groupsSort));
         //
         var castedAliasSeriesName = new Array();
@@ -571,12 +588,11 @@ cBoard.service('dataService', function ($http, $q, updateService) {
 
         if (!_.isUndefined(valueSort)) {
             valueSortArr.sort(function (a, b) {
-                if (a.v == b.v)return 0;
+                if (a.v == b.v) return 0;
                 var p = toNumber(a.v, b.v)
                 if ((p[0] < p[1]) ^ valueSort == 'asc') {
                     return 1;
-                }
-                else {
+                } else {
                     return -1;
                 }
             });

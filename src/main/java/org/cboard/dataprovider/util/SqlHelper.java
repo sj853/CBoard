@@ -3,7 +3,8 @@ package org.cboard.dataprovider.util;
 import org.apache.commons.lang.StringUtils;
 import org.cboard.dataprovider.config.*;
 
-import java.util.StringJoiner;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -22,7 +23,8 @@ public class SqlHelper {
     private boolean isSubquery;
     private SqlSyntaxHelper sqlSyntaxHelper = new SqlSyntaxHelper();
 
-    public SqlHelper() {}
+    public SqlHelper() {
+    }
 
     public SqlHelper(String tableName, boolean isSubquery) {
         this.tableName = tableName;
@@ -52,11 +54,19 @@ public class SqlHelper {
         Stream<ConfigComponent> filters = Stream.concat(Stream.concat(c, r), f);
         Stream<DimensionConfig> dimStream = Stream.concat(config.getColumns().stream(), config.getRows().stream());
 
-        String dimColsStr = assembleDimColumns(dimStream);
+        List<DimensionConfig> dimensionConfigs = dimStream.collect(Collectors.toList());
+
+        String dimColsStr = assembleDimColumns(dimensionConfigs);
         String aggColsStr = assembleAggValColumns(config.getValues().stream());
+
+        String orderByStr = assembleOrderBy(config.getRows().stream());
 
         String whereStr = filterSql(filters, "WHERE");
         String groupByStr = StringUtils.isBlank(dimColsStr) ? "" : "GROUP BY " + dimColsStr;
+
+        orderByStr = StringUtils.isBlank(orderByStr) ? "" : "ORDER BY " + orderByStr;
+
+        String dimSortColsStr = assembleSortColumns(dimensionConfigs);
 
         StringJoiner selectColsStr = new StringJoiner(",");
         if (!StringUtils.isBlank(dimColsStr)) {
@@ -65,13 +75,17 @@ public class SqlHelper {
         if (!StringUtils.isBlank(aggColsStr)) {
             selectColsStr.add(aggColsStr);
         }
+        if (!StringUtils.isBlank(dimSortColsStr)) {
+            selectColsStr.add(dimSortColsStr);
+        }
+
         String fsql = null;
         if (isSubquery) {
-            fsql = "\nSELECT %s \n FROM (\n%s\n) cb_view \n %s \n %s";
+            fsql = "\nSELECT %s \n FROM (\n%s\n) cb_view \n %s \n %s \n %s";
         } else {
-            fsql = "\nSELECT %s \n FROM %s \n %s \n %s";
+            fsql = "\nSELECT %s \n FROM %s \n %s \n %s \n %s";
         }
-        String exec = String.format(fsql, selectColsStr, tableName, whereStr, groupByStr);
+        String exec = String.format(fsql, selectColsStr, tableName, whereStr, groupByStr, orderByStr);
         return exec;
     }
 
@@ -160,7 +174,7 @@ public class SqlHelper {
                 .boxed()
                 .map(i -> sqlSyntaxHelper.getDimMemberStr(config, i))
                 .collect(Collectors
-                .joining(","));
+                        .joining(","));
         return resultList;
     }
 
@@ -201,10 +215,60 @@ public class SqlHelper {
         return columns.toString();
     }
 
-    private String assembleDimColumns(Stream<DimensionConfig> columnsStream) {
+    private String assembleDimColumns(List<DimensionConfig> dimensionConfigs) {
         StringJoiner columns = new StringJoiner(", ", "", " ");
         columns.setEmptyValue("");
-        columnsStream.map(g -> sqlSyntaxHelper.getProjectStr(g)).distinct().filter(e -> e != null).forEach(columns::add);
+        dimensionConfigs.stream().map(g -> sqlSyntaxHelper.getProjectStr(g)).distinct().filter(Objects::nonNull).forEach(columns::add);
+
+        return columns.toString();
+    }
+
+
+    /**
+     * 组装排序字段
+     *
+     * @param dimensionConfigs
+     * @return
+     */
+    private String assembleSortColumns(List<DimensionConfig> dimensionConfigs) {
+        StringJoiner columns = new StringJoiner(", ", "", " ");
+        columns.setEmptyValue("");
+        dimensionConfigs.stream().filter(c -> c != null && c.getSort() != null).forEach(col -> {
+            if ("custom".equalsIgnoreCase(col.getSort()) && Optional.ofNullable(col.getSortValues()).orElse(Collections.emptyList()).size() > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(String.format(" CASE %s", col.getColumnName()));
+
+                AtomicReference<Integer> i = new AtomicReference<>(col.getSortValues().size());
+                col.getSortValues().forEach(c -> sb.append(String.format(" WHEN '%s' THEN %d ", c, i.getAndSet(i.get() - 1))));
+
+                sb.append(String.format(" ELSE 0 END as %s_sort", col.getColumnName()));
+
+                columns.add(sb.toString());
+            }
+        });
+        return columns.toString();
+    }
+
+    /**
+     * 组装orderby 语句
+     *
+     * @param rowStream
+     * @return
+     */
+    private String assembleOrderBy(Stream<DimensionConfig> rowStream) {
+        StringJoiner columns = new StringJoiner(", ", "", " ");
+        columns.setEmptyValue("");
+        rowStream.distinct().filter(c -> c != null && c.getSort() != null).forEach(col -> {
+            if (!"custom".equalsIgnoreCase(col.getSort())) {
+                columns.add(String.format("%s %s", col.getColumnName(), col.getSort()));
+            } else {
+//                if ("desc".equalsIgnoreCase(col.getOtherSort())) {
+                columns.add(String.format(" %s_sort desc , %s %s", col.getColumnName(), col.getColumnName(), col.getOtherSort()));
+//                } else {
+//
+//                }
+            }
+        });
         return columns.toString();
     }
 

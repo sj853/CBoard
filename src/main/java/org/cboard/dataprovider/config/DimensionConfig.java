@@ -11,6 +11,9 @@ public class DimensionConfig extends ConfigComponent {
     private List<String> values;
     private String id;
     private String custom;
+    private String sort;
+    private String otherSort;
+    private List<String> sortValues;
 
     public String getColumnName() {
         return columnName;
@@ -50,5 +53,29 @@ public class DimensionConfig extends ConfigComponent {
 
     public void setValues(List<String> values) {
         this.values = values;
+    }
+
+    public String getSort() {
+        return sort;
+    }
+
+    public void setSort(String sort) {
+        this.sort = sort;
+    }
+
+    public List<String> getSortValues() {
+        return sortValues;
+    }
+
+    public void setSortValues(List<String> sortValues) {
+        this.sortValues = sortValues;
+    }
+
+    public String getOtherSort() {
+        return otherSort;
+    }
+
+    public void setOtherSort(String otherSort) {
+        this.otherSort = otherSort;
     }
 }

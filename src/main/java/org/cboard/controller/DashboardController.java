@@ -86,6 +86,9 @@ public class DashboardController extends BaseController {
     @Autowired
     private XlsProcessService xlsProcessService;
 
+    @Autowired
+    private DatasetAuthService datasetAuthService;
+
 
     @RequestMapping(value = "/test")
     public ServiceStatus test(@RequestParam(name = "datasource", required = false) String datasource, @RequestParam(name = "query", required = false) String query) {
@@ -448,9 +451,19 @@ public class DashboardController extends BaseController {
         return tempFile.split(imgPath)[1];
     }
 
+    /**
+     * 获取数据集权限设置列表
+     *
+     * @return 数据集权限设置列表
+     */
+    @GetMapping("/datasetAuthList")
+    public List<ViewDashboardDatasetAuth> getAllDatasetAuthList() {
+        return datasetAuthService.getAllDatasetAuthList();
+    }
+
     private String imgPath(HttpServletRequest request) {
         String templateDir = request.getSession().getServletContext().getRealPath("/");
-        templateDir = templateDir.replace("\\","/");
+        templateDir = templateDir.replace("\\", "/");
         templateDir = templateDir + "imgs/cockpit";
         return templateDir;
     }

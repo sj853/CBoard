@@ -74,6 +74,12 @@ angular.module('cBoard').config(['$stateProvider', function ($stateProvider) {
             templateUrl: 'org/cboard/view/config/dataset.html',
             controller: 'datasetCtrl'
         })
+        .state('config.datasetAuth', {
+            url: '/datasetauth/{id}',
+            params: {id: null},
+            templateUrl: 'org/cboard/view/config/datasetauth.html',
+            controller: 'datasetAuthCtrl'
+        })
         .state('config.job', {
             url: '/job',
             templateUrl: 'org/cboard/view/config/job.html',

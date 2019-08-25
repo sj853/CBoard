@@ -83,7 +83,8 @@
     "RES_ADMIN": "资源管理",
     "JOB": "定时任务",
     "SHARE_RESOURCE": "资源分享",
-    "HOMEPAGE": "主页设置"
+    "HOMEPAGE": "主页设置",
+    "DATASET_AUTH": "细粒度权限控制"
   },
   "HEADER": {
     "SIGN_OUT": "注销",

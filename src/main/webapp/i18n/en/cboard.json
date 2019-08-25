@@ -83,7 +83,8 @@
     "RES_ADMIN": "Resource Admin",
     "JOB": "Job",
     "SHARE_RESOURCE": "Share Resource",
-    "HOMEPAGE": "Homepage"
+    "HOMEPAGE": "Homepage",
+    "DATASET_AUTH": "Dataset Authorization"
   },
   "HEADER": {
     "SIGN_OUT": "SignOut",

@@ -6,14 +6,8 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
 
     var translate = $filter('translate');
     $scope.optFlag = 'none';
-    $scope.curDataset = {data: {expressions: [], filters: [], schema: {dimension: [], measure: []}}};
-    $scope.curWidget = {};
-    $scope.alerts = [];
-    $scope.verify = {dsName: true};
-    $scope.queryAceOpt = cbAcebaseOption;
     $scope.hierarchy = translate("CONFIG.DATASET.HIERARCHY");
     $scope.uuid4 = uuid4;
-    $scope.params = [];
 
     $scope.selectDataset = null;
     $scope.selectDatasetAuth = null;
@@ -21,37 +15,11 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
 
     $scope.editRole = null;
     $scope.editDataset = null;
+    $scope.editDatasetAuth = null;
 
     $scope.selectNodeType = '';
 
     var treeID = 'dataSetTreeID'; // Set to a same value with treeDom
-    var updateUrl = "dashboard/updateDataset.do";
-
-    var trash = {};
-
-    $scope.toTrash = function (array, index) {
-        var o = array[index];
-        if (o.type == 'column') {
-            if (!trash[o.column]) {
-                trash[o.column] = [];
-            }
-            trash[o.column].push(o);
-        }
-        array.splice(index, 1);
-    };
-
-    $scope.dndTransfer = {
-        dimension: function (list, index, item, type) {
-            if (type == 'column') {
-                list[index] = {type: 'column', column: item};
-            }
-        },
-        measure: function (list, index, item, type) {
-            if (type == 'column') {
-                list[index] = {type: 'column', column: item};
-            }
-        }
-    };
 
     var getRoleList = function () {
         $http.get("admin/getRoleListAll.do").success(function (response) {
@@ -81,184 +49,163 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
     getRoleList();
     getDatasetList();
 
+    var findConfigParent = function(config, configId) {
+        if (config.type === 'condition' && config.configs && config.configs.length > 0) {
+            var c = _.find(config.configs, function (cc) {
+                return cc.id === configId;
+            });
+            if (c != null) {
+                return config;
+            }
+            for (var i = 0; i < config.configs.length; i++) {
+                c = findConfigParent(config.configs[i], configId);
+                if (c != null) {
+                    return config.configs[i];
+                }
+            }
+        }
+        return null;
+    };
+
+    $scope.toTrash = function (config, index) {
+        var parent = findConfigParent($scope.editConfig[0], config.id);
+        if (parent != null) {
+            parent.configs.splice(index, 1);
+        }
+    };
+
+    $scope.switchCondition = function(config) {
+        if (config.value === 'AND') {
+            config.value = "OR";
+            config.text = translate("CONFIG.DATASET.AUTH.CONDITION_OR");
+            config.switchText = translate("CONFIG.DATASET.AUTH.SWITCH_TO_AND");
+        } else {
+            config.value = "AND";
+            config.text = translate("CONFIG.DATASET.AUTH.CONDITION_AND");
+            config.switchText = translate("CONFIG.DATASET.AUTH.SWITCH_TO_OR");
+        }
+    }
+
     $scope.newDatasetAuth = function () {
         $scope.optFlag = 'new';
-        $scope.curDataset = {data: {expressions: [], filters: [], schema: {dimension: [], measure: []}}};
-        $scope.curWidget = {};
-        $scope.selects = $scope.selectDataset.data.selects;
+        $scope.editDataset = angular.copy($scope.selectDataset);
+        $scope.selects = $scope.editDataset.data.selects;
         $scope.editRole = null;
         if ($scope.roleList && $scope.roleList.length > 0) {
             $scope.editRole = $scope.roleList[0];
         }
-        $scope.editConfig = [{
+        var addCondition = $scope.getAndCondition();
+        addCondition.root = true;
+        $scope.editConfig = [addCondition];
+    };
+
+    $scope.getAndCondition = function() {
+        return {
             "type": "condition",
             "value": "AND",
             "text": translate("CONFIG.DATASET.AUTH.CONDITION_AND"),
             "switchText": translate("CONFIG.DATASET.AUTH.SWITCH_TO_OR"),
-            "deleteText": translate("CONFIG.DATASET.AUTH.DELETE"),
-            "root": true
-        }];
-        cleanPreview();
+            "id": uuid4.generate(),
+            "configs": []
+        };
     };
 
-    $scope.editDs = function (ds) {
-        $http.post("dashboard/checkDatasource.do", {id: ds.data.datasource}).success(function (response) {
-            if (response.status == '1') {
-                doEditDs(ds);
-                $scope.doConfigParams();
-            } else {
-                ModalUtils.alert(translate("ADMIN.CONTACT_ADMIN") + "：Datasource/" + response.msg, "modal-danger", "lg");
-            }
-        });
+    $scope.getOrCondition = function() {
+        return {
+            "type": "condition",
+            "value": "OR",
+            "text": translate("CONFIG.DATASET.AUTH.CONDITION_OR"),
+            "switchText": translate("CONFIG.DATASET.AUTH.SWITCH_TO_AND"),
+            "id": uuid4.generate(),
+            "configs": []
+        };
     };
 
-    var doEditDs = function (ds) {
-        $scope.optFlag = 'edit';
-        $scope.curDataset = angular.copy(ds);
-        $scope.curDataset.name = $scope.curDataset.categoryName + '/' + $scope.curDataset.name;
-        if (!$scope.curDataset.data.expressions) {
-            $scope.curDataset.data.expressions = [];
-        }
-        if (!$scope.curDataset.data.filters) {
-            $scope.curDataset.data.filters = [];
-        }
-        if (!$scope.curDataset.data.schema) {
-            $scope.curDataset.data.schema = {dimension: [], measure: []};
-        }
-        $scope.datasource = _.find($scope.datasourceList, function (ds) {
-            return ds.id == $scope.curDataset.data.datasource;
-        });
-        $scope.curWidget.query = $scope.curDataset.data.query;
-        $scope.selects = ds.data.selects;
-        //$scope.loadData();
-    };
-
-    $scope.checkExist = function (column) {
-        var find = _.find($scope.curDataset.data.schema.measure, function (e) {
-            return e.column == column;
-        });
-        if (!_.isUndefined(find)) {
-            return true;
-        }
-        find = _.find($scope.curDataset.data.schema.dimension, function (e) {
-            if (e.type == 'level') {
-                var _find = _.find(e.columns, function (_e) {
-                    return _e.column == column;
-                });
-                return !_.isUndefined(_find);
-            } else {
-                return e.column == column;
-            }
-        });
-        return !_.isUndefined(find);
-    };
-
-    $scope.deleteDs = function (ds) {
-        $http.get("dashboard/getAllWidgetList.do").then(function (response) {
-            if (!response) {
-                return false;
-            }
-            var resDs = [];
-
-            for (var i = 0; i < response.data.length; i++) {
-                if (response.data[i].data.datasetId == ds.id) {
-                    resDs.push(response.data[i].name);
-                }
-            }
-
-            if (resDs.length > 0) {
-                var warnStr = translate("CONFIG.WIDGET.WIDGET") + ":[" + resDs.toString() + "]";
-                ModalUtils.alert(translate("COMMON.NOT_ALLOWED_TO_DELETE_BECAUSE_BE_DEPENDENT") + warnStr, "modal-warning", "lg");
-                return false;
-            }
-            ModalUtils.confirm(translate("COMMON.CONFIRM_DELETE"), "modal-warning", "lg", function () {
-                $http.post("dashboard/deleteDataset.do", {id: ds.id}).success(function (serviceStatus) {
-                    if (serviceStatus.status == '1') {
-                        getDatasetList();
-                    } else {
-                        ModalUtils.alert(serviceStatus.msg, "modal-warning", "lg");
+    $scope.editFilter = function (config) {
+        $uibModal.open({
+            templateUrl: 'org/cboard/view/config/datasetauth/columnConfig.html',
+            windowTemplateUrl: 'org/cboard/view/util/modal/window.html',
+            backdrop: false,
+            size: 'lg',
+            resolve: {
+                param: function () {
+                    if (config.columnConfig) {
+                        return config.columnConfig;
                     }
-                    $scope.optFlag = 'none';
-                });
-            });
+                    return {col: config.column, type: '=', values: []};
+                },
+                filter: function () {
+                    return true;
+                },
+                getSelects: function () {
+                    return function (byFilter, column, callback) {
+                        dataService.getDimensionValues($scope.selectDataset.data.datasource, undefined, $scope.selectDataset.id, column, undefined, function (filtered) {
+                            callback(filtered);
+                        });
+                    };
+                },
+                ok: function () {
+                    return function (param) {
+                        config.columnConfig = param;
+                    }
+                }
+            },
+            controller: 'columnConfigCtrl'
         });
     };
 
-    $scope.copyDs = function (ds) {
-        var data = angular.copy(ds);
-        data.name = data.name + "_copy";
-        $http.post("dashboard/saveNewDataset.do", {json: angular.toJson(data)}).success(function (serviceStatus) {
-            if (serviceStatus.status == '1') {
+    $scope.editDatasetAuth = function() {
+        $scope.optFlag = 'edit';
+        $scope.editDataset = angular.copy($scope.selectDataset);
+        $scope.selects = $scope.editDataset.data.selects;
+        $scope.editRole = $scope.selectRole;
+        $scope.editDatasetAuth = angular.copy($scope.selectDatasetAuth);
+        var addCondition = angular.copy($scope.editDatasetAuth.config);
+        addCondition.root = true;
+        $scope.editConfig = [addCondition];
+    };
+
+    $scope.deleteDatasetAuth = function () {
+        ModalUtils.confirm(translate("COMMON.CONFIRM_DELETE"), "modal-warning", "lg", function () {
+            $http.post("dashboard/deleteDataset.do", {id: datasetAuth.id}).success(function (serviceStatus) {
+                if (serviceStatus.status === '1') {
+                    getDatasetList();
+                } else {
+                    ModalUtils.alert(serviceStatus.msg, "modal-warning", "lg");
+                }
                 $scope.optFlag = 'none';
-                getDatasetList();
-                ModalUtils.alert(translate("COMMON.SUCCESS"), "modal-success", "sm");
-            } else {
-                ModalUtils.alert(serviceStatus.msg, "modal-warning", "lg");
-            }
+            });
         });
     };
 
     var validate = function () {
         $scope.alerts = [];
-        if (!$scope.curDataset.name) {
-            $scope.alerts = [{msg: translate('CONFIG.DATASET.NAME') + translate('COMMON.NOT_EMPTY'), type: 'danger'}];
-            $scope.verify = {dsName: false};
-            $("#DatasetName").focus();
+        if (!$scope.editConfig.configs || $scope.editConfig.configs.length === 0) {
+            $scope.alerts = [{msg: translate('CONFIG.DATASET.AUTH.AUTH_CONFIG') + translate('COMMON.NOT_EMPTY'), type: 'danger'}];
             return false;
-        }
-        for (i in $scope.params) {
-            var name = $scope.params[i].name;
-            var label = $scope.params[i].label;
-            var required = $scope.params[i].required;
-            var value = $scope.curWidget.query[name];
-            if (required == true && value != 0 && (value == undefined || value == "")) {
-                var pattern = /([\w_\s\.]+)/;
-                var msg = pattern.exec(label);
-                if (msg && msg.length > 0)
-                    msg = translate(msg[0]);
-                else
-                    msg = label;
-                $scope.alerts = [{msg: "[" + msg + "]" + translate('COMMON.NOT_EMPTY'), type: 'danger'}];
-                $scope.verify[name] = false;
-                return false;
-            }
         }
         return true;
     };
 
     $scope.save = function () {
-        $scope.datasource ? $scope.curDataset.data.datasource = $scope.datasource.id : null;
-        $scope.curDataset.data.query = $scope.curWidget.query;
-
         if (!validate()) {
             return;
         }
-        var ds = angular.copy($scope.curDataset);
-        var index = ds.name.lastIndexOf('/');
-        ds.categoryName = $scope.curDataset.name.substring(0, index).trim();
-        ds.name = $scope.curDataset.name.slice(index + 1).trim();
-        if (ds.categoryName == '') {
-            ds.categoryName = translate("COMMON.DEFAULT_CATEGORY");
-        }
 
-        if ($scope.optFlag == 'new') {
-            $http.post("dashboard/saveNewDataset.do", {json: angular.toJson(ds)}).success(function (serviceStatus) {
-                if (serviceStatus.status == '1') {
-                    getCategoryList();
+        if ($scope.optFlag === 'new') {
+            $http.post("dashboard/saveNewDatasetAuth.do", {json: angular.toJson($scope.editConfig), roleId: $scope.editRole.roleId, datasetId: $scope.editDataset.id}).success(function (serviceStatus) {
+                if (serviceStatus.status === '1') {
                     getDatasetList();
-                    $scope.verify = {dsName: true};
                     ModalUtils.alert(translate("COMMON.SUCCESS"), "modal-success", "sm");
                 } else {
                     $scope.alerts = [{msg: serviceStatus.msg, type: 'danger'}];
                 }
             });
         } else {
-            $http.post(updateUrl, {json: angular.toJson(ds)}).success(function (serviceStatus) {
-                if (serviceStatus.status == '1') {
+            $http.post("dashboard/saveDatasetAuth.do", {json: angular.toJson($scope.editConfig), datasetAuthId: $scope.editDatasetAuth.id}).success(function (serviceStatus) {
+                if (serviceStatus.status === '1') {
                     $scope.optFlag = 'edit';
-                    getCategoryList();
                     getDatasetList();
-                    $scope.verify = {dsName: true};
                     ModalUtils.alert(translate("COMMON.SUCCESS"), "modal-success", "sm");
                 } else {
                     $scope.alerts = [{msg: serviceStatus.msg, type: 'danger'}];
@@ -266,282 +213,15 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
             });
         }
 
-    };
-
-    $scope.editFilterGroup = function (col) {
-        var columnObjs = schemaToSelect($scope.curDataset.data.schema);
-        $uibModal.open({
-            templateUrl: 'org/cboard/view/config/modal/filterGroup.html',
-            windowTemplateUrl: 'org/cboard/view/util/modal/window.html',
-            backdrop: false,
-            scope: $scope,
-            controller: function ($scope, $uibModalInstance) {
-                if (col) {
-                    $scope.data = angular.copy(col);
-                } else {
-                    $scope.data = {group: '', filters: [], id: uuid4.generate()};
-                }
-                $scope.columnObjs = columnObjs;
-                $scope.close = function () {
-                    $uibModalInstance.close();
-                };
-                $scope.addColumn = function (str) {
-                    $scope.data.filters.push({col: str, type: '=', values: []})
-                };
-                $scope.ok = function () {
-                    if (col) {
-                        col.group = $scope.data.group;
-                        col.filters = $scope.data.filters;
-                    } else {
-                        if ($scope.$parent.curDataset.data.filters == null) {
-                            $scope.$parent.curDataset.data.filters = [];
-                        }
-                        $scope.$parent.curDataset.data.filters.push($scope.data);
-                    }
-                    $uibModalInstance.close();
-                };
-                $scope.editFilter = function (filter) {
-                    $uibModal.open({
-                        templateUrl: 'org/cboard/view/dashboard/modal/param.html',
-                        windowTemplateUrl: 'org/cboard/view/util/modal/window.html',
-                        backdrop: false,
-                        size: 'lg',
-                        resolve: {
-                            param: function () {
-                                return angular.copy(filter);
-                            },
-                            filter: function () {
-                                return false;
-                            },
-                            getSelects: function () {
-                                return function (byFilter, column, callback) {
-                                    dataService.getDimensionValues($scope.datasource.id, $scope.curWidget.query, undefined, column, undefined, function (filtered) {
-                                        callback(filtered);
-                                    });
-                                };
-                            },
-                            ok: function () {
-                                return function (param) {
-                                    filter.type = param.type;
-                                    filter.values = param.values;
-                                }
-                            }
-                        },
-                        controller: 'paramSelector'
-                    });
-                };
-            }
-        });
-    };
-
-    $scope.deleteFilterGroup = function (index) {
-        ModalUtils.confirm(translate("COMMON.FILTER_GROUP") + ": [" + $scope.curDataset.data.filters[index].group + "], " +
-            translate("COMMON.CONFIRM_DELETE"), "modal-warning", "lg",
-            function () {
-                $scope.curDataset.data.filters.splice(index, 1)
-            }
-        );
-    };
-
-    var schemaToSelect = function (schema, rawSelects) {
-        if (schema.selects) {
-            return angular.copy(schema.selects);
-        } else {
-            var selects = [];
-            selects = selects.concat(schema.measure);
-            _.each(schema.dimension, function (e) {
-                if (e.type == 'level') {
-                    _.each(e.columns, function (c) {
-                        selects.push(c);
-                    });
-                } else {
-                    selects.push(e);
-                }
-            });
-            _.each(rawSelects, function(col) {
-                if (_.find(selects, function(o) { return col == o.column;}) === undefined) {
-                    selects.push({
-                        column: col
-                    });
-                }
-            });
-            return angular.copy(selects);
-        }
-    };
-
-    $scope.editExp = function (col) {
-        var aggregate = [
-            {name: 'sum', value: 'sum'},
-            {name: 'count', value: 'count'},
-            {name: 'avg', value: 'avg'},
-            {name: 'max', value: 'max'},
-            {name: 'min', value: 'min'},
-            {name: 'distinct', value: 'distinct'}
-        ];
-        var ok;
-        var data = {expression: ''};
-        if (!col) {
-            ok = function (exp, alias) {
-                $scope.curDataset.data.expressions.push({
-                    type: 'exp',
-                    exp: data.expression,
-                    alias: data.alias,
-                    id: uuid4.generate()
-                });
-            }
-        } else {
-            data.expression = col.exp;
-            data.alias = col.alias;
-            ok = function (data) {
-                col.exp = data.expression;
-                col.alias = data.alias;
-            }
-        }
-        var columnObjs = schemaToSelect($scope.curDataset.data.schema, $scope.selects);
-        var expressions = $scope.curDataset.data.expressions;
-        $uibModal.open({
-            templateUrl: 'org/cboard/view/config/modal/exp.html',
-            windowTemplateUrl: 'org/cboard/view/util/modal/window.html',
-            backdrop: false,
-            size: 'lg',
-            scope: $scope,
-            controller: function ($scope, $uibModalInstance) {
-                $scope.data = data;
-                $scope.columnObjs = columnObjs;
-                $scope.aggregate = aggregate;
-                $scope.expressions = expressions;
-                $scope.alerts = [];
-                $scope.expAceOpt = expEditorOptions($scope.selects, aggregate, function(_editor) {
-                    $scope.expAceEditor = _editor;
-                    $scope.expAceSession = _editor.getSession();
-                    _editor.focus();
-                });
-                $scope.close = function () {
-                    $uibModalInstance.close();
-                };
-                $scope.addToken = function (str, agg) {
-                    var editor = $scope.expAceEditor;
-                    editor.session.insert(editor.getCursorPosition(), str);
-                    editor.focus();
-                    if (agg) editor.getSelection().moveCursorLeft();
-                };
-                $scope.verify = function () {
-                    $scope.alerts = [];
-                    var v = verifyAggExpRegx($scope.data.expression);
-                    $scope.alerts = [{
-                        msg: v.isValid ? translate("COMMON.SUCCESS") : v.msg,
-                        type: v.isValid ? 'success' : 'danger'
-                    }];
-                };
-                $scope.ok = function () {
-                    if (!$scope.data.alias) {
-                        ModalUtils.alert(translate('CONFIG.WIDGET.ALIAS') + translate('COMMON.NOT_EMPTY'), "modal-warning", "lg");
-                        return;
-                    }
-                    $scope.data.expression = $scope.expAceSession.getValue();
-                    ok($scope.data);
-                    $uibModalInstance.close();
-                };
-            }
-        });
-    };
-
-    $scope.deleteExp = function (index) {
-        ModalUtils.confirm(translate("CONFIG.COMMON.CUSTOM_EXPRESSION") + ": [" + $scope.curDataset.data.expressions[index].alias + "], " +
-            translate("COMMON.CONFIRM_DELETE"), "modal-warning", "lg",
-            function () {
-                $scope.curDataset.data.expressions.splice(index, 1)
-            }
-        );
     };
 
     $scope.createNode = function (item) {
-        if (trash[item.column]) {
-            var _i = trash[item.column].pop();
-            if (_i) {
-                return _i;
-            }
-        }
         item.id = uuid4.generate();
         return item;
     };
 
-    $scope.measureToDimension = function (index, o) {
-        $scope.curDataset.data.schema.measure.splice(index, 1);
-        $scope.curDataset.data.schema.dimension.push(o);
-    };
-
-    $scope.toDimension = function (o) {
-        $scope.curDataset.data.schema.dimension.push($scope.createNode(o));
-    };
-
-    $scope.custom = function (o) {
-        var selects = $scope.selects;
-        var datasource = $scope.datasource;
-        $uibModal.open({
-            templateUrl: 'org/cboard/view/config/modal/custom.html',
-            windowTemplateUrl: 'org/cboard/view/util/modal/window.html',
-            backdrop: false,
-            size: 'lg',
-            controller: function ($scope, $uibModalInstance) {
-                $scope.c = o;
-                $scope.ok = function () {
-                    $uibModalInstance.close();
-                };
-                $scope.customAceOpt = schemaCustomOpt(selects, datasource.type);
-            }
-        });
-    };
-
-    $scope.loadData = function (reload) {
-
-        if (reload != true) {
-            reload = false;
-        }
-
-        cleanPreview();
-        $scope.loading = true;
-
-        dataService.getColumns({
-            datasource: $scope.datasource.id,
-            query: $scope.curWidget.query,
-            datasetId: null,
-            reload: reload,
-            callback: function (dps) {
-                $scope.loading = false;
-                $scope.toChartDisabled = false;
-                if (dps.msg == "1") {
-                    $scope.alerts = [];
-                    $scope.selects = dps.columns;
-                } else {
-                    $scope.alerts = [{msg: dps.msg, type: 'danger'}];
-                }
-
-                var widget = {
-                    chart_type: "table",
-                    filters: [],
-                    groups: [],
-                    keys: [],
-                    selects: [],
-                    values: [{
-                        cols: []
-                    }
-                    ]
-                };
-                _.each($scope.selects, function (c) {
-                    widget.keys.push({
-                        col: c,
-                        type: "eq",
-                        values: []
-                    });
-                });
-                $scope.curDataset.data.selects = $scope.selects;
-            }
-        });
-    };
-
-    var cleanPreview = function () {
-        $('#dataset_preview').html("");
+    $scope.toCondition = function(o) {
+        $scope.editConfig[0].configs.push(o);
     };
 
     /**  js tree related start **/
@@ -549,54 +229,9 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
 
     $("#" + treeID).keyup(function (e) {
         if (e.keyCode == 46) {
-            $scope.deleteNode();
+            $scope.deleteDatasetAuth();
         }
     });
-
-    var getSelectedDataSet = function () {
-        var selectedNode = jstree_GetSelectedNodes(treeID)[0];
-        return _.find($scope.datasetList, function (ds) {
-            return ds.id == selectedNode.id;
-        });
-    };
-
-    var checkTreeNode = function (actionType) {
-        return jstree_CheckTreeNode(actionType, treeID, ModalUtils.alert);
-    };
-
-    var switchNode = function (id) {
-        $scope.ignoreChanges = false;
-        var dataSetTree = jstree_GetWholeTree(treeID);
-        dataSetTree.deselect_all();
-        dataSetTree.select_node(id);
-    };
-
-    $scope.applyModelChanges = function () {
-        return !$scope.ignoreChanges;
-    };
-
-    $scope.copyNode = function () {
-        if (!checkTreeNode("copy")) return;
-        $scope.copyDs(getSelectedDataSet());
-    };
-
-    $scope.editNode = function () {
-        if (!checkTreeNode("edit")) return;
-        var selectedNode = jstree_GetSelectedNodes(treeID)[0];
-        $state.go('config.dataset', {id: selectedNode.id}, {notify: false});
-        $scope.editDs(getSelectedDataSet());
-    };
-
-    $scope.deleteNode = function () {
-        if (!checkTreeNode("delete")) return;
-        $scope.deleteDs(getSelectedDataSet());
-    };
-
-    $scope.showInfo = function () {
-        if (!checkTreeNode("info")) return;
-        var content = getSelectedDataSet();
-        ModalUtils.info(content,"modal-info", "lg");
-    };
 
     $scope.searchNode = function () {
         var para = {dsName: '', dsrName: ''};
@@ -706,37 +341,6 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
             $scope.editNode();
         },
         move_node: function (e, data) {
-
-            var updateItem = function (nodeid, newCategory) {
-                var item = _.find($scope.datasetList, function (i) { return i.id == nodeid; });
-                item.categoryName = newCategory;
-                $http.post(updateUrl, {json: angular.toJson(item)}).success(function (serviceStatus) {
-                    if (serviceStatus.status == '1') {
-                        //console.log('success!');
-                    } else {
-                        ModalUtils.alert(serviceStatus.msg, "modal-warning", "lg");
-                    }
-                });
-            };
-
-            var updateNode = function (node, tarPath) {
-                var children = node.children;
-                if (children.length == 0) {
-                    updateItem(node.id, tarPath);
-                } else {
-                    var newTarPath = tarPath == "" ? node.text : tarPath + "/" + node.text;
-                    for (var i = 0; i < children.length; i++) {
-                        var child = myJsTree.get_node(children[i]);
-                        updateNode(child, newTarPath);
-                    }
-                }
-            };
-
-            var myJsTree = jstree_GetWholeTree(treeID),
-                curNode = data.node,
-                tarNodeID = data.parent;
-            var tarPath = myJsTree.get_path(tarNodeID, "/").substring(5);
-            updateNode(curNode, tarPath);
         }
     };
 
@@ -753,7 +357,7 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
             });
             $scope.selectRole = _.find($scope.roleList, function (role) {
                 return role.roleId === $scope.selectDatasetAuth.roleId;
-            })
+            });
         } else if (node.id.indexOf('dataset_') >= 0) {
             $scope.selectNodeType = 'dataset';
             $scope.selectDatasetAuth = null;
@@ -764,23 +368,4 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
             });
         }
     };
-
-    $scope.doConfigParams = function () {
-        $http.get('dashboard/getConfigParams.do', {
-            params: {
-                type: $scope.datasource.type,
-                datasourceId: $scope.datasource.id,
-                page: 'dataset.html'
-            }
-        }).then(function (response) {
-            $scope.params = response.data;
-        });
-    };
-
-    /**  js tree related end **/
-
-
-    /** Ace Editor Starer... **/
-    $scope.queryAceOpt = datasetEditorOptions();
-
 });

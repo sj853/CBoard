@@ -6,7 +6,6 @@
                 <div class="box-header with-border">
                     <i class="fa fa-cubes"></i> <h3 class="box-title"> {{'CONFIG.DATASET.DATASET'|translate}}</h3>
                     <div class="box-tools pull-right">
-                        <i class="fa fa-info toolbar-icon" ng-show="selectNodeType == 'dataset_auth' || selectNodeType == 'dataset'" ng-click="showInfo()" title="{{'COMMON.INFORMATION'|translate}}"></i>&nbsp;&nbsp;
                         <i class="fa fa-plus toolbar-icon" ng-show="selectNodeType == 'dataset'" ng-click="newDatasetAuth()" title="{{'COMMON.NEW'|translate}}"></i>&nbsp;&nbsp;
                         <i class="fa fa-edit toolbar-icon" ng-show="selectNodeType == 'dataset_auth'" ng-click="editNode()" title="{{'COMMON.EDIT'|translate}}"></i>&nbsp;&nbsp;
                         <i class="fa fa-trash-o toolbar-icon" ng-show="selectNodeType == 'dataset_auth'"  ng-click="deleteNode()" title="{{'COMMON.DELETE'|translate}}"></i>
@@ -44,21 +43,29 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="row" ng-show="curDataset.data.schema">
+                            <div class="form-group" ng-repeat="alert in alerts">
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <div uib-alert ng-class="'alert-' + (alert.type || 'warning')"
+                                         close="alerts.splice($index, 1)">{{alert.msg}}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" ng-show="selects">
                                 <div class="col-md-6">
                                     <div class="form-control" style="height: auto; padding: 0; border: 2px dashed #d2d6de">
-                                        <span class="btn btn-sm btn-default" style="margin: 3px 3px;">AND</span>
-                                        <span class="btn btn-sm btn-default" style="margin: 3px 3px;">OR</span>
+                                        <span class="btn btn-sm btn-default" style="margin: 3px 3px;" dnd-draggable="getAndCondition()" dnd-type="'condition'" ng-click="toCondition(getAndCondition())">AND</span>
+                                        <span class="btn btn-sm btn-default" style="margin: 3px 3px;" dnd-draggable="getOrCondition()" dnd-type="'condition'" ng-click="toCondition(getOrCondition())">OR</span>
                                     </div>
                                     <div class="form-control" style="min-height: 200px;height: auto;padding: 0px; border: 2px dashed #d2d6de">
                                         <span ng-repeat="o in selects"
-                                              class="btn btn-sm" style="margin: 3px 3px;" ng-class="{true:'btn-primary',false:'btn-default'}[checkExist(o)]"
-                                              dnd-draggable="{type: 'column', column: o}" dnd-type="'column'" ng-click="toDimension({type: 'column', column: o})">{{o}}</span>
+                                              class="btn btn-sm btn-default" style="margin: 3px 3px;"
+                                              dnd-draggable="{type: 'column', column: o}" dnd-type="'column'" ng-click="toCondition({type: 'column', column: o})">{{o}}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="tree tree-bg-dragin" style="max-height: 700px; overflow: auto;">
-                                        <ul style="padding-left: 5px" ng-repeat="config in editConfig" ng-include="'org/cboard/view/config/datasetauth/authConfig.html'">
+                                        <ul style="padding-left: 5px">
+                                            <li class="parent_li" ng-repeat="config in editConfig" ng-include="'org/cboard/view/config/datasetauth/authConfig.html'"></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -72,11 +79,6 @@
                     <button type="submit" ng-click="save()" class="btn btn-success pull-right"
                             style="margin-right: 5px">{{'COMMON.SAVE'|translate}}
                     </button>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div id="dataset_preview" style="height: 300px;"></div>
-                        </div>
-                    </div>
                 </div>
                 <!-- /.box-footer-->
                 <div class="overlay" ng-show="loading">

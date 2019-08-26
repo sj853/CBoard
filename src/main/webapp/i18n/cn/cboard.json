@@ -357,7 +357,7 @@
         "SWITCH_TO_OR": "切换为 OR",
         "CONDITION_OR": "OR",
         "SWITCH_TO_AND": "切换为 AND",
-        "DELETE": "删除"
+        "AUTH_CONFIG": "权限配置"
       }
     },
     "JOB": {

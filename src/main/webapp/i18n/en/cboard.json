@@ -357,7 +357,7 @@
         "SWITCH_TO_OR": "Switch To OR",
         "CONDITION_OR": "OR",
         "SWITCH_TO_AND": "Switch To AND",
-        "DELETE": "Delete"
+        "AUTH_CONFIG": "Auth Config"
       }
     },
     "JOB": {

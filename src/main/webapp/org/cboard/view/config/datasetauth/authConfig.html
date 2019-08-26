@@ -1,47 +1,14 @@
-<li class="parent_li">
-    <span>
-        <b>{{config.text}}</b>
-    </span>
-    <i class="fa fa-exchange" title="{{config.switchText}}"></i>
-    <i class="fa fa-trash-o" title="{{config.deleteText}}" ng-show="!config.root"></i>
-    <ul dnd-list="config.configs" dnd-drop="createNode(config, item)" dnd-allowed-types="['column','condition']">
-        <li class="dndPlaceholder"><span class="sort-highlight btn btn-default btn-xs">+</span></li>
-        <li ng-repeat="o in config.configs" ng-switch="o.type"
-            ng-class="{'condition':'parent_li'}[o.type]">
-            <span ng-switch-when="condition"  dnd-draggable="o"
-                      dnd-type="o.type"
-                      dnd-moved="curDataset.data.schema.dimension.splice($index, 1)">
-                <i class="fa fa-caret-down"/>
-                <img src="imgs/schema/hierarchy.gif">
-                {{o.alias}}
-            </span>
-            <span ng-switch-when="column"  dnd-draggable="o"
-                  dnd-type="o.type"
-                  dnd-moved="curDataset.data.schema.dimension.splice($index, 1)">
-                                                            <img src="imgs/schema/bullet_blue.png">
-                                                            {{o.alias?o.alias+' ('+o.column+')':o.column}}
-                                                        </span>
-            <i class="fa fa-edit" ng-click="custom(o)" title="{{'CONFIG.DATASET.TIP_EDIT_ALIAS'|translate}}"></i>
-            <i class="fa fa-trash-o" ng-click="toTrash(curDataset.data.schema.dimension,$index)" title="{{'COMMON.DELETE'|translate}}"></i>
-            <i ng-switch-when="column" class="fa fa-exchange" title="{{'CONFIG.DATASET.TIP_SWITCH_TO_MEASURE'|translate}}"
-               ng-click="curDataset.data.schema.dimension.splice($index, 1);curDataset.data.schema.measure.push(o)"></i>
-            <ul ng-switch-when="level"
-                dnd-list="o.columns"
-                dnd-allowed-types="['column']" dnd-drop="createNode(item)">
-                <li class="dndPlaceholder">
-                    <span class="sort-highlight btn btn-default btn-xs">+</span></li>
-                <li ng-repeat="c in o.columns">
-                                                                <span dnd-draggable="c" dnd-type="c.type"
-                                                                      dnd-moved="o.columns.splice($index, 1)">
-                                                                    <img src="imgs/schema/bullet_blue.png">
-                                                                    {{c.alias?c.alias+' ('+c.column+')':c.column}}
-                                                                </span>
-                    <i class="fa fa-edit" ng-click="custom(c)" title="{{'CONFIG.DATASET.TIP_EDIT_ALIAS'|translate}}"></i>
-                    <i class="fa fa-trash-o" ng-click="toTrash(o.columns,$index)" title="{{'COMMON.DELETE'|translate}}"></i>
-                    <i class="fa fa-exchange" title="{{'CONFIG.DATASET.TIP_SWITCH_TO_MEASURE'|translate}}"
-                       ng-click="o.columns.splice($index, 1);curDataset.data.schema.measure.push(c)"></i>
-                </li>
-            </ul>
-        </li>
-    </ul>
-</li>
+<span ng-switch="config.type" dnd-draggable="config"
+      dnd-type="config.type"
+      dnd-moved="toTrash(config, $index)">
+    <b ng-switch-when="condition">{{config.text}}</b>
+    <span ng-switch-when="column">{{config.column}}</span>
+</span>
+<i ng-if="config.type=='condition'" class="fa fa-exchange" title="{{config.switchText}}" ng-click="switchCondition(config)"></i>
+<i ng-if="config.type=='column'" class="fa fa-edit" ng-click="editFilter(config)" title="{{'CONFIG.DATASET.TIP_EDIT_ALIAS'|translate}}"></i>
+<i class="fa fa-trash-o" title="{{'COMMON.DELETE'|translate}}" ng-if="!config.root" ng-click="toTrash(config, $index)"></i>
+<ul ng-if="config.type=='condition'" dnd-list="config.configs" dnd-drop="createNode(item)" dnd-allowed-types="['column','condition']">
+    <li class="dndPlaceholder"><span class="sort-highlight btn btn-default btn-xs">+</span></li>
+    <li ng-repeat="config in config.configs" ng-include="'org/cboard/view/config/datasetauth/authConfig.html'" ng-class="{'condition':'parent_li'}[config.type]">
+    </li>
+</ul>

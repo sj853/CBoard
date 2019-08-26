@@ -15,10 +15,16 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
     $scope.uuid4 = uuid4;
     $scope.params = [];
 
+    $scope.selectDataset = null;
+    $scope.selectDatasetAuth = null;
+    $scope.selectRole = null;
+
+    $scope.editRole = null;
+    $scope.editDataset = null;
+
     $scope.selectNodeType = '';
 
     var treeID = 'dataSetTreeID'; // Set to a same value with treeDom
-    var originalData = [];
     var updateUrl = "dashboard/updateDataset.do";
 
     var trash = {};
@@ -47,23 +53,16 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
         }
     };
 
-    $http.get("dashboard/getDatasourceList.do").success(function (response) {
-        $scope.datasourceList = response;
-    });
+    var getRoleList = function () {
+        $http.get("admin/getRoleListAll.do").success(function (response) {
+            $scope.roleList = response;
+        });
+    };
 
     var getDatasetList = function () {
         $http.get("dashboard/getDatasetList.do").success(function (response) {
             $scope.datasetList = response;
             getDatasetAuthList();
-        });
-    };
-
-    var getCategoryList = function () {
-        $http.get("dashboard/getDatasetCategoryList.do").success(function (response) {
-            $scope.categoryList = response;
-            $("#DatasetName").autocomplete({
-                source: $scope.categoryList
-            });
         });
     };
 
@@ -79,14 +78,26 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
         });
     };
 
-    getCategoryList();
+    getRoleList();
     getDatasetList();
 
-    $scope.newDs = function () {
+    $scope.newDatasetAuth = function () {
         $scope.optFlag = 'new';
         $scope.curDataset = {data: {expressions: [], filters: [], schema: {dimension: [], measure: []}}};
         $scope.curWidget = {};
-        $scope.selects = [];
+        $scope.selects = $scope.selectDataset.data.selects;
+        $scope.editRole = null;
+        if ($scope.roleList && $scope.roleList.length > 0) {
+            $scope.editRole = $scope.roleList[0];
+        }
+        $scope.editConfig = [{
+            "type": "condition",
+            "value": "AND",
+            "text": translate("CONFIG.DATASET.AUTH.CONDITION_AND"),
+            "switchText": translate("CONFIG.DATASET.AUTH.SWITCH_TO_OR"),
+            "deleteText": translate("CONFIG.DATASET.AUTH.DELETE"),
+            "root": true
+        }];
         cleanPreview();
     };
 
@@ -580,11 +591,13 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
         if (!checkTreeNode("delete")) return;
         $scope.deleteDs(getSelectedDataSet());
     };
+
     $scope.showInfo = function () {
         if (!checkTreeNode("info")) return;
         var content = getSelectedDataSet();
         ModalUtils.info(content,"modal-info", "lg");
     };
+
     $scope.searchNode = function () {
         var para = {dsName: '', dsrName: ''};
         //split search keywords
@@ -731,8 +744,24 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
         $scope.selectNodeType = '';
         if (node.id.indexOf('dataset_auth_') >= 0) {
             $scope.selectNodeType = 'dataset_auth';
+            var datasetAuthId = parseInt(node.id.replace('dataset_auth_', ''));
+            $scope.selectDatasetAuth = _.find($scope.datasetAuthList, function (datasetAuth) {
+                return datasetAuth.id === datasetAuthId;
+            });
+            $scope.selectDataset = _.find($scope.datasetList, function (dataset) {
+                return dataset.id === $scope.selectDatasetAuth.datasetId
+            });
+            $scope.selectRole = _.find($scope.roleList, function (role) {
+                return role.roleId === $scope.selectDatasetAuth.roleId;
+            })
         } else if (node.id.indexOf('dataset_') >= 0) {
             $scope.selectNodeType = 'dataset';
+            $scope.selectDatasetAuth = null;
+            $scope.selectRole = null;
+            var datasetId = parseInt(node.id.replace('dataset_', ''));
+            $scope.selectDataset = _.find($scope.datasetList, function (dataset) {
+                return dataset.id === datasetId
+            });
         }
     };
 
@@ -745,33 +774,6 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
             }
         }).then(function (response) {
             $scope.params = response.data;
-        });
-    };
-
-    $scope.changeDs = function () {
-        $scope.curWidget.query = {};
-        $http.get('dashboard/getConfigParams.do', {
-            params: {
-                type: $scope.datasource.type,
-                datasourceId: $scope.datasource.id,
-                page: 'dataset.html'
-            }
-        }).then(function (response) {
-            $scope.params = response.data;
-            for (i in $scope.params) {
-                var name = $scope.params[i].name;
-                var value = $scope.params[i].value;
-                var checked = $scope.params[i].checked;
-                var type = $scope.params[i].type;
-                if (type == "checkbox" && checked == true) {
-                    $scope.curWidget.query[name] = true;
-                }
-                if (type == "number" && value != "" && !isNaN(value)) {
-                    $scope.curWidget.query[name] = Number(value);
-                } else if (value != "") {
-                    $scope.curWidget.query[name] = value;
-                }
-            }
         });
     };
 

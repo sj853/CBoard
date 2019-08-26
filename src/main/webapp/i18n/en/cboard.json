@@ -351,7 +351,14 @@
       "TIP_ADD_HIERARCHY": "Add Hierarchy",
       "TIP_SWITCH_TO_MEASURE": "Switch to Measure",
       "TIP_SWITCH_TO_DIMENSION": "Switch to Dimension",
-      "CUSTOM": "Custom"
+      "CUSTOM": "Custom",
+      "AUTH": {
+        "CONDITION_AND": "AND",
+        "SWITCH_TO_OR": "Switch To OR",
+        "CONDITION_OR": "OR",
+        "SWITCH_TO_AND": "Switch To AND",
+        "DELETE": "Delete"
+      }
     },
     "JOB": {
       "CONFIG": "Config",

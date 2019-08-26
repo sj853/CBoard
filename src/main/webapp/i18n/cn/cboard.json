@@ -351,7 +351,14 @@
       "TIP_ADD_HIERARCHY": "添加层级",
       "TIP_SWITCH_TO_MEASURE": "转换为指标",
       "TIP_SWITCH_TO_DIMENSION": "转换为维度",
-      "CUSTOM": "定制语句"
+      "CUSTOM": "定制语句",
+      "AUTH": {
+        "CONDITION_AND": "AND",
+        "SWITCH_TO_OR": "切换为 OR",
+        "CONDITION_OR": "OR",
+        "SWITCH_TO_AND": "切换为 AND",
+        "DELETE": "删除"
+      }
     },
     "JOB": {
       "CONFIG": "配置",

@@ -154,7 +154,7 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
         });
     };
 
-    $scope.editDatasetAuth = function() {
+    $scope.startEditDatasetAuth = function() {
         $scope.optFlag = 'edit';
         $scope.editDataset = angular.copy($scope.selectDataset);
         $scope.selects = $scope.editDataset.data.selects;
@@ -167,7 +167,7 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
 
     $scope.deleteDatasetAuth = function () {
         ModalUtils.confirm(translate("COMMON.CONFIRM_DELETE"), "modal-warning", "lg", function () {
-            $http.post("dashboard/deleteDataset.do", {id: datasetAuth.id}).success(function (serviceStatus) {
+            $http.post("dashboard/deleteDatasetAuth.do", {id: $scope.selectDatasetAuth.id}).success(function (serviceStatus) {
                 if (serviceStatus.status === '1') {
                     getDatasetList();
                 } else {
@@ -180,7 +180,7 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
 
     var validate = function () {
         $scope.alerts = [];
-        if (!$scope.editConfig.configs || $scope.editConfig.configs.length === 0) {
+        if (!$scope.editConfig || $scope.editConfig.length === 0 || $scope.editConfig[0].configs.length === 0) {
             $scope.alerts = [{msg: translate('CONFIG.DATASET.AUTH.AUTH_CONFIG') + translate('COMMON.NOT_EMPTY'), type: 'danger'}];
             return false;
         }
@@ -193,16 +193,27 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
         }
 
         if ($scope.optFlag === 'new') {
-            $http.post("dashboard/saveNewDatasetAuth.do", {json: angular.toJson($scope.editConfig), roleId: $scope.editRole.roleId, datasetId: $scope.editDataset.id}).success(function (serviceStatus) {
+            $http.post("dashboard/savedDatasetAuth.do", {
+                json: angular.toJson({
+                    config: $scope.editConfig,
+                    roleId: $scope.editRole.roleId,
+                    datasetId: $scope.editDataset.id
+                })
+            }).success(function (serviceStatus) {
                 if (serviceStatus.status === '1') {
                     getDatasetList();
                     ModalUtils.alert(translate("COMMON.SUCCESS"), "modal-success", "sm");
+                    $scope.optFlag = 'none';
                 } else {
                     $scope.alerts = [{msg: serviceStatus.msg, type: 'danger'}];
                 }
             });
         } else {
-            $http.post("dashboard/saveDatasetAuth.do", {json: angular.toJson($scope.editConfig), datasetAuthId: $scope.editDatasetAuth.id}).success(function (serviceStatus) {
+            $http.post("dashboard/updateDatasetAuth.do", {
+                json: angular.toJson({
+                    config: $scope.editConfig,
+                    id: $scope.editDatasetAuth.id
+                })}).success(function (serviceStatus) {
                 if (serviceStatus.status === '1') {
                     $scope.optFlag = 'edit';
                     getDatasetList();
@@ -212,7 +223,10 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
                 }
             });
         }
+    };
 
+    $scope.cancel = function() {
+        $scope.optFlag = 'none';
     };
 
     $scope.createNode = function (item) {
@@ -338,7 +352,12 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
         dblclick: function () {
             var selectedNodes = jstree_GetSelectedNodes(treeID);
             if (selectedNodes.length === 0) return; // Ignore double click folder action
-            $scope.editNode();
+            $scope.refreshToolButtonState(selectedNodes[0]);
+            if ($scope.selectNodeType === 'dataset') {
+                $scope.newDatasetAuth();
+            } else if ($scope.selectNodeType === 'dataset_auth') {
+                $scope.startEditDatasetAuth();
+            }
         },
         move_node: function (e, data) {
         }

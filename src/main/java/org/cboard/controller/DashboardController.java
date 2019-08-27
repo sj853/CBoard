@@ -461,6 +461,39 @@ public class DashboardController extends BaseController {
         return datasetAuthService.getAllDatasetAuthList();
     }
 
+    /**
+     * 保存数据集权限
+     *
+     * @param json 配置
+     * @return 保存结果
+     */
+    @RequestMapping("/savedDatasetAuth")
+    public ServiceStatus savedDatasetAuth(@RequestParam(name = "json") String json) {
+        return datasetAuthService.save(tlUser.get().getUserId(), json);
+    }
+
+    /**
+     * 更新数据集权限
+     *
+     * @param json 配置
+     * @return 保存结果
+     */
+    @RequestMapping("/updateDatasetAuth")
+    public ServiceStatus updateDatasetAuth(@RequestParam(name = "json") String json) {
+        return datasetAuthService.update(json);
+    }
+
+    /**
+     * 删除数据集权限
+     *
+     * @param id id
+     * @return 删除结果
+     */
+    @RequestMapping("/deleteDatasetAuth")
+    public ServiceStatus deleteDatasetAuth(@RequestParam(name = "id") Long id) {
+        return datasetAuthService.delete(id);
+    }
+
     private String imgPath(HttpServletRequest request) {
         String templateDir = request.getSession().getServletContext().getRealPath("/");
         templateDir = templateDir.replace("\\", "/");

@@ -40,6 +40,7 @@ public class DataProviderRoleService {
         Long datasourceId = (Long) proceedingJoinPoint.getArgs()[0];
         Long datasetId = (Long) proceedingJoinPoint.getArgs()[2];
         String userid = authenticationService.getCurrentUser().getUserId();
+        //TODO 增加数据权限过滤
         if (datasetId != null) {
             if (datasetDao.checkDatasetRole(userid, datasetId, RolePermission.PATTERN_READ) > 0) {
                 return proceedingJoinPoint.proceed();

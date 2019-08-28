@@ -43,4 +43,24 @@
         LEFT JOIN dashboard_role r ON s.role_id = r.role_id
         WHERE s.dataset_id=#{0} AND s.role_id=#{1} AND s.id!=#{2}
     </select>
+
+    <select id="getDatasetAuthList" resultType="org.cboard.pojo.DashboardDatasetAuth">
+        SELECT
+        s.id,
+        s.dataset_id as datasetId,
+        s.user_id     AS userId,
+        s.role_id  AS roleId,
+        r.role_name as roleName,
+        s.config     AS config,
+        s.create_time   AS createTime,
+        s.update_time   AS updateTime
+        FROM dashboard_dataset_auth s
+        LEFT JOIN dashboard_user u ON u.user_id = s.user_id
+        LEFT JOIN dashboard_role r ON s.role_id = r.role_id
+        WHERE s.dataset_id=#{datasetId}
+        AND s.role_id in
+        <foreach collection="roleIds" item="id" index="index" open="(" close=")" separator=",">
+        #{id}
+        </foreach>
+    </select>
 </mapper>

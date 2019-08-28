@@ -1,5 +1,6 @@
 package org.cboard.dao;
 
+import org.apache.ibatis.annotations.Param;
 import org.cboard.pojo.DashboardDatasetAuth;
 import org.springframework.stereotype.Repository;
 
@@ -49,8 +50,17 @@ public interface DatasetAuthDao {
      *
      * @param datasetId 数据集id
      * @param roleId    角色id
-     * @param id id
+     * @param id        id
      * @return 数据集权限
      */
     DashboardDatasetAuth getDatasetAuth(Long datasetId, String roleId, Long id);
+
+    /**
+     * 获取数据集指定角色权限配置
+     *
+     * @param datasetId 数据集id
+     * @param roleIds   角色id列表
+     * @return 数据集权限配置
+     */
+    List<DashboardDatasetAuth> getDatasetAuthList(@Param("datasetId") Long datasetId, @Param("roleIds") List<String> roleIds);
 }

@@ -14,6 +14,7 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
     $scope.selectRole = null;
 
     $scope.editRole = null;
+    $scope.editRoleId = null;
     $scope.editDataset = null;
     $scope.editDatasetAuth = null;
 
@@ -87,12 +88,14 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
     }
 
     $scope.newDatasetAuth = function () {
+        $scope.alerts = [];
         $scope.optFlag = 'new';
         $scope.editDataset = angular.copy($scope.selectDataset);
         $scope.selects = $scope.editDataset.data.selects;
         $scope.editRole = null;
         if ($scope.roleList && $scope.roleList.length > 0) {
             $scope.editRole = $scope.roleList[0];
+            $scope.editRoleId = $scope.editRole.roleId;
         }
         var addCondition = $scope.getAndCondition();
         addCondition.root = true;
@@ -155,6 +158,7 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
     };
 
     $scope.startEditDatasetAuth = function() {
+        $scope.alerts = [];
         $scope.optFlag = 'edit';
         $scope.editDataset = angular.copy($scope.selectDataset);
         $scope.selects = $scope.editDataset.data.selects;
@@ -196,7 +200,7 @@ cBoard.controller('datasetAuthCtrl', function ($scope, $http, $state, $statePara
             $http.post("dashboard/savedDatasetAuth.do", {
                 json: angular.toJson({
                     config: $scope.editConfig,
-                    roleId: $scope.editRole.roleId,
+                    roleId: $('#selRole').val(),
                     datasetId: $scope.editDataset.id
                 })
             }).success(function (serviceStatus) {
